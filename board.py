@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 
 class Board:
     def __init__(self, board=None):
@@ -6,6 +7,9 @@ class Board:
         self.height = 6
         self.board = np.asarray([" "] * self.width * self.height).reshape(6,7)
         self.player1 = True
+
+        if board is not None:
+            self.__dict__  = deepcopy(board.__dict__)
 
     def __str__(self):
         out = "".join(["-"]*29)
@@ -136,4 +140,12 @@ class Board:
             
 if __name__ == "__main__":
     board = Board()
+    print("""
+ ██████  ██████  ███    ██ ███    ██ ███████  ██████ ████████     ███████  ██████  ██    ██ ██████  
+██      ██    ██ ████   ██ ████   ██ ██      ██         ██        ██      ██    ██ ██    ██ ██   ██ 
+██      ██    ██ ██ ██  ██ ██ ██  ██ █████   ██         ██        █████   ██    ██ ██    ██ ██████  
+██      ██    ██ ██  ██ ██ ██  ██ ██ ██      ██         ██        ██      ██    ██ ██    ██ ██   ██ 
+ ██████  ██████  ██   ████ ██   ████ ███████  ██████    ██        ██       ██████   ██████  ██   ██ 
+                                                                                                                                                                                          
+    """)
     board.play()
