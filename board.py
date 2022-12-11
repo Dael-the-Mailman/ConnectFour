@@ -15,7 +15,7 @@ class Board:
         out = "".join(["-"]*29)
         for row in self.board:
             out += "\n| " + " | ".join(row) + " |\n" + "".join(["-"]*29)
-        
+        out += "\n  " + "   ".join(str(i) for i in range(self.width))
         return out
 
     def place_piece(self, column):
@@ -104,9 +104,13 @@ class Board:
         return actions
 
     def play(self):
-        print("X goes first")
+        print(self)
         while True:
             # Process User Input
+            if self.player1:
+                print("X's turn")
+            else:
+                print("O's turn")
             user_input = input("Select from columns 0-6 or type exit: ")
             if(user_input == 'exit'):
                 break
@@ -120,7 +124,7 @@ class Board:
             # If User input is valid then place the piece on the board
             self.place_piece(user_input)
             print(self) # Print board once piece placed
-
+            
             # Check if the user won the game
             if(self.check_win(user_input)):
                 if(self.player1):
