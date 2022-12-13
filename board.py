@@ -1,24 +1,34 @@
 import numpy as np
 from copy import deepcopy
 
-class Board:
-    def __init__(self, board=None):
+class Connect4Game:
+    def __init__(self):
         self.width = 7
         self.height = 6
-        self.board = np.asarray([" "] * self.width * self.height).reshape(6,7)
-        self.player1 = True
+        # self.board = np.asarray([" "] * self.width * self.height).reshape(6,7)
+        # self.player1 = True
 
-        if board is not None:
-            self.__dict__  = deepcopy(board.__dict__)
+        # if board is not None:
+        #     self.__dict__  = deepcopy(board.__dict__)
 
-    def __str__(self):
+    def printBoard(self, board):
         out = "".join(["-"]*29)
-        for row in self.board:
+        for row in board:
             out += "\n| " + " | ".join(row) + " |\n" + "".join(["-"]*29)
         out += "\n  " + "   ".join(str(i) for i in range(self.width))
         return out
+    
+    def get_init_board(self):
+        board = np.zeros((self.height, self.width))
+        return board
 
-    def place_piece(self, column):
+    def get_board_size(self):
+        return (self.height, self.width)
+
+    def get_action_size(self):
+        return self.width
+
+    def place_piece(self, board, player, column):
         if self.is_full_column(column):
             print("Invalid Move")
             return
@@ -95,45 +105,6 @@ class Board:
 
     def is_full_column(self, column):
         return self.board[0][column] != " "
-
-    def play(self):
-        print(self)
-        while True:
-            # Process User Input
-            if self.player1:
-                print("X's turn")
-            else:
-                print("O's turn")
-            user_input = input("Select from columns 0-6 or type exit: ")
-            if(user_input == 'exit'):
-                break
-            if(user_input == ''):
-                continue
-            user_input = int(user_input)
-            if(user_input > 6 or user_input < 0):
-                print("Invalid Move")
-                continue
-            
-            # If User input is valid then place the piece on the board
-            self.place_piece(user_input)
-            print(self) # Print board once piece placed
-            
-            # Check if the user won the game
-            if(self.check_win(user_input)):
-                if(self.player1):
-                    print("X WINS!!!")
-                    break
-                else:
-                    print("O WINS!!!")
-                    break
-            
-            # If the user hasn't won check if the board is drawn
-            if(self.is_full_board()):
-                print("DRAW")
-                break
-            
-            # Switch players if everything else is false
-            self.player1 = not self.player1
     
     def get_reward(self, column):
         if self.is_win(column):
@@ -163,13 +134,12 @@ class Board:
                     board[row][col] *= multiplier
         return board
         
-    def get_next_state(self, action):
-        board = Board(self)
-        board.player1 = not board.player1
-        board.place_piece(action)
+    def get_next_state(self, board, player, action):
+        b = np.copy(board)
+        b = self.place_piece(board, player, action)
     
 if __name__ == "__main__":
-    board = Board()
+    game = Connect4Game()
     print("""
  ██████  ██████  ███    ██ ███    ██ ███████  ██████ ████████     ███████  ██████  ██    ██ ██████  
 ██      ██    ██ ████   ██ ████   ██ ██      ██         ██        ██      ██    ██ ██    ██ ██   ██ 
@@ -178,4 +148,6 @@ if __name__ == "__main__":
  ██████  ██████  ██   ████ ██   ████ ███████  ██████    ██        ██       ██████   ██████  ██   ██ 
                                                                                                                                                                                           
     """)
-    board.play()
+    board = game.get_init_board()
+    print(board)
+    print()
