@@ -79,3 +79,86 @@ class GameTest(unittest.TestCase):
          [0,  -1,  1,  -1,  1,  -1,  0],
          [1,  -1,  1,  -1,  1,  -1,  1]])
         self.assertTrue(self.game.check_win(b2, 3))
+
+    def test_get_valid_moves(self):
+        b = self.game.get_init_board()
+        valid_moves = self.game.get_valid_moves(b)
+        test_moves = np.array([1] * 7)
+        self.assertTrue((valid_moves == test_moves).all())
+
+        for i in range(self.game.height):
+            b[i][0] = 1
+        valid_moves = self.game.get_valid_moves(b)
+        self.assertFalse((valid_moves == test_moves).all())
+        test_moves[0] = 0
+        self.assertTrue((valid_moves == test_moves).all())
+
+        for i in range(self.game.height):
+            b[i][5] = 1
+        valid_moves = self.game.get_valid_moves(b)
+        self.assertFalse((valid_moves == test_moves).all())
+        test_moves[5] = 0
+        self.assertTrue((valid_moves == test_moves).all())
+
+    def test_get_next_state(self):
+        b = self.game.get_init_board()
+        player = PLAYER_O
+
+        b, player = self.game.get_next_state(b, player, 5)
+        ref_b = np.zeros((6,7))
+        ref_b[5][5] = -1
+        self.assertEqual(player, 1)
+        self.assertTrue((ref_b == b).all())
+
+        b, player = self.game.get_next_state(b, player, 5)
+        ref_b[4][5] = 1
+        self.assertEqual(player, -1)
+        self.assertTrue((ref_b == b).all())
+
+        b, player = self.game.get_next_state(b, player, 0)
+        ref_b[5][0] = -1
+        self.assertEqual(player, 1)
+        self.assertTrue((ref_b == b).all())
+
+    def test_get_canonical_board(self):
+        b = np.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0],
+                [0, 0, -1, 1, 1, -1, 1],
+                [0, -1, -1, -1, -1, 1, 1]
+            ]
+        )
+        test_b = self.game.get_canonical_board(b, PLAYER_X)
+        self.assertTrue((test_b == b).all())
+        self.assertFalse((test_b == -b).all())
+
+        test_b = self.game.get_canonical_board(b, PLAYER_O)
+        self.assertTrue((test_b == -b).all())
+        self.assertFalse((test_b == b).all())
+
+    def test_get_reward_for_player(self):
+        b = self.game.get_init_board()
+        b[5][3] = 1
+        b[5][5] = -1
+        self.assertIsNone(self.game.get_reward(b, PLAYER_X, 3))
+        self.assertIsNone(self.game.get_reward(b, PLAYER_O, 5))
+
+        b = np.array(
+            [
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0],
+                [0, 0, -1, 1, 1, -1, 1],
+                [0, -1, -1, -1, -1, 1, 1]
+            ]
+        )
+        self.assertEqual(self.game.get_reward(b, PLAYER_O, 1), 1)
+        self.assertEqual(self.game.get_reward(b, PLAYER_X, 1), -1)
+
+        b = self.game.get_canonical_board(b, PLAYER_O)
+        self.assertEqual(self.game.get_reward(b, PLAYER_O, 1), -1)
+        self.assertEqual(self.game.get_reward(b, PLAYER_X, 1), 1)

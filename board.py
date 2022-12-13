@@ -121,34 +121,30 @@ class Connect4Game:
     def is_full_column(self, board, column):
         return board[0][column] != 0
     
-    def get_reward(self, column):
-        if self.is_win(column):
-            return 1 if self.player1 else -1
-        if not self.is_full_board():
+    def get_reward(self, board, player, action):
+        if self.check_win(board, action):
+            for i in range(self.height - 1, -1, -1):
+                if(board[i][action] != 0):
+                    if board[i][action] == player:
+                        return 1
+                    else:
+                        return -1
+        if not self.is_full_board(board):
             return None
         return 0
     
-    def get_valid_moves(self):
-        valid_moves = [0] * self.width
+    def get_valid_moves(self, board):
+        valid_moves = [0] * self.get_action_size()
         for col in range(self.width):
-            if not self.is_full_column(col):
+            if not self.is_full_column(board, col):
                 valid_moves[col] = 1
         return valid_moves
 
-    def get_canonical_board(self):
-        board = np.zeros(self.board.shape)
-        for row in range(self.height):
-            for col in range(self.width):
-                if self.player1:
-                    multiplier = 1 if self.board[row][col] == "X" else -1
-                    board[row][col] = 1 if self.board[row][col] != " " else 0
-                    board[row][col] *= multiplier
-                else:
-                    multiplier = 1 if self.board[row][col] == "O" else -1
-                    board[row][col] = 1 if self.board[row][col] != " " else 0
-                    board[row][col] *= multiplier
-        return board
+    def get_canonical_board(self, board, player):
+        return board * player
         
     def get_next_state(self, board, player, action):
         b = np.copy(board)
         b = self.place_piece(board, player, action)
+
+        return (b, -player)

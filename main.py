@@ -26,11 +26,11 @@ while True:
         continue
     
     # If User input is valid then place the piece on the board
-    board = game.place_piece(board, player, user_input)
+    board, player = game.get_next_state(board, player, user_input)
     game.print_board(board) # Print board once piece placed
 
     if(game.check_win(board, user_input)):
-        if(player == PLAYER_X):
+        if(-player == PLAYER_X):
             print("X WINS!!!")
             break
         else:
@@ -40,5 +40,3 @@ while True:
     if(game.is_full_board(board)):
         print("DRAW")
         break
-
-    player *= -1
