@@ -10,6 +10,3 @@ class GameTest(unittest.TestCase):
     def test_board_dimensionality(self):
         b = self.game.get_init_board()
         self.assertEqual(b.shape, (self.game.height, self.game.width))
-        self.assertEqual(self.game.get_action_size(), 7)
-    
-    def 
