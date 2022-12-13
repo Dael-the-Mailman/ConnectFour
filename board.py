@@ -96,13 +96,6 @@ class Board:
     def is_full_column(self, column):
         return self.board[0][column] != " "
 
-    def generate_states(self):
-        actions = []
-        for i in range(self.width):
-            if not self.is_full_column(i):
-                actions.append(i)
-        return actions
-
     def play(self):
         print(self)
         while True:
@@ -141,7 +134,40 @@ class Board:
             
             # Switch players if everything else is false
             self.player1 = not self.player1
-            
+    
+    def get_reward(self, column):
+        if self.is_win(column):
+            return 1 if self.player1 else -1
+        if not self.is_full_board():
+            return None
+        return 0
+    
+    def get_valid_moves(self):
+        valid_moves = [0] * self.width
+        for col in range(self.width):
+            if not self.is_full_column(col):
+                valid_moves[col] = 1
+        return valid_moves
+
+    def get_canonical_board(self):
+        board = np.zeros(self.board.shape)
+        for row in range(self.height):
+            for col in range(self.width):
+                if self.player1:
+                    multiplier = 1 if self.board[row][col] == "X" else -1
+                    board[row][col] = 1 if self.board[row][col] != " " else 0
+                    board[row][col] *= multiplier
+                else:
+                    multiplier = 1 if self.board[row][col] == "O" else -1
+                    board[row][col] = 1 if self.board[row][col] != " " else 0
+                    board[row][col] *= multiplier
+        return board
+        
+    def get_next_state(self, action):
+        board = Board(self)
+        board.player1 = not board.player1
+        board.place_piece(action)
+    
 if __name__ == "__main__":
     board = Board()
     print("""
