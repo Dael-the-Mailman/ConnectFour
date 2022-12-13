@@ -150,4 +150,3 @@ if __name__ == "__main__":
     """)
     board = game.get_init_board()
     print(board)
-    print()
