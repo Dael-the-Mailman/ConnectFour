@@ -47,12 +47,22 @@ class Connect4Game:
                     break
         return board
 
+    def is_win(self, board):
+        for i in range(self.get_action_size()):
+            if self.check_win(board, i):
+                return True
+        return False
+
     def check_win(self, board, column):
+        row = None
         for i in range(self.height):
             if board[i][column] != 0:
                 row = i
                 break
         
+        if row == None:
+            return False
+
         # Check all four directions using a sliding window
 
         # Horizontal

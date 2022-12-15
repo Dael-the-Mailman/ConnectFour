@@ -1,6 +1,7 @@
 import numpy as np
 import unittest
 from board import Connect4Game, PLAYER_X, PLAYER_O
+from mcts_no_priors import MCTS, Node
 
 class GameTest(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -79,6 +80,44 @@ class GameTest(unittest.TestCase):
          [0,  -1,  1,  -1,  1,  -1,  0],
          [1,  -1,  1,  -1,  1,  -1,  1]])
         self.assertTrue(self.game.check_win(b2, 3))
+
+    def test_is_win(self):
+        init = self.game.get_init_board()
+        self.assertFalse(self.game.is_win(init))
+
+        horizontal = np.zeros((6,7))
+        horizontal[0][0] = 1
+        horizontal[0][1] = 1
+        horizontal[0][2] = 1
+        horizontal[0][3] = 1
+
+        self.assertTrue(self.game.is_win(horizontal))
+
+        horizontal = np.zeros((6,7))
+        horizontal[0][0] = 1
+        horizontal[0][1] = -1
+        horizontal[0][2] = 1
+        horizontal[0][3] = 1
+        self.assertFalse(self.game.is_win(horizontal))
+
+        b1 = np.array(
+        [[0,  0,  0,  0,  0,  0,  0],
+         [0,  0,  -1,  0,  -1,  0,  0],
+         [0,  0,  1,  1,  1,  0,  0],
+         [0,  1,  -1,  1,  -1,  1,  0],
+         [0,  -1,  1,  -1,  1,  -1,  0],
+         [1,  -1,  1,  -1,  1,  -1,  1]])
+        self.assertFalse(self.game.is_win(b1))
+
+        b2 = np.array(
+        [[0,  0,  0,  0,  0,  0,  0],
+         [0,  0,  -1, 0,  -1,  0,  0],
+         [0,  0,  1,  -1,  1,  0,  0],
+         [0,  1,  -1,  1,  -1,  1,  0],
+         [0,  -1,  1,  -1,  1,  -1,  0],
+         [1,  -1,  1,  -1,  1,  -1,  1]])
+        self.assertTrue(self.game.is_win(b2))
+
 
     def test_get_valid_moves(self):
         b = self.game.get_init_board()
@@ -162,3 +201,21 @@ class GameTest(unittest.TestCase):
         b = self.game.get_canonical_board(b, PLAYER_O)
         self.assertEqual(self.game.get_reward(b, PLAYER_O, 1), -1)
         self.assertEqual(self.game.get_reward(b, PLAYER_X, 1), 1)
+
+class TestMCTSNoPriors(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestMCTSNoPriors, self).__init__(*args, **kwargs)
+        self.game = Connect4Game()
+        self.mcts = MCTS(self.game)
+
+    def test_init(self):
+        b = self.game.get_init_board()
+        node = Node(b, self.game)
+
+        self.assertTrue((b == node.board).all())
+        self.assertIsNone(node.parent)
+        self.assertFalse(node.is_terminal)
+        self.assertFalse(node.is_fully_expanded)
+        self.assertEqual(node.visits, 0)
+        self.assertEqual(node.score, 0)
+        self.assertEqual(node.children, {})
