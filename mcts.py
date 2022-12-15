@@ -94,12 +94,12 @@ class MCTS:
         self.model = model
         self.args = args
 
-    def run(self, model, state, to_play):
-
+    def run(self, state, to_play):
+        state = np.copy(state)
         root = Node(0, to_play)
 
         # EXPAND root
-        action_probs, value = model.predict(state)
+        action_probs, value = self.model.predict(state)
         valid_moves = self.game.get_valid_moves(state)
         action_probs = action_probs * valid_moves  # mask invalid moves
         action_probs /= np.sum(action_probs)
@@ -119,15 +119,17 @@ class MCTS:
             # Now we're at a leaf node and we would like to expand
             # Players always play from their own perspective
             next_state, _ = self.game.get_next_state(state, player=1, action=action)
+            print(next_state)
+            print(action)
             # Get the board from the perspective of the other player
             next_state = self.game.get_canonical_board(next_state, player=-1)
 
             # The value of the new state from the perspective of the other player
-            value = self.game.get_reward_for_player(next_state, player=1)
+            value = self.game.get_reward(next_state, player=1, action=action)
             if value is None:
                 # If the game has not ended:
                 # EXPAND
-                action_probs, value = model.predict(next_state)
+                action_probs, value = self.model.predict(next_state)
                 valid_moves = self.game.get_valid_moves(next_state)
                 action_probs = action_probs * valid_moves  # mask invalid moves
                 action_probs /= np.sum(action_probs)
@@ -145,3 +147,4 @@ class MCTS:
         for node in reversed(search_path):
             node.value_sum += value if node.to_play == to_play else -value
             node.visit_count += 1
+

@@ -8,11 +8,6 @@ class Connect4Game:
     def __init__(self):
         self.width = 7
         self.height = 6
-        # self.board = np.asarray([" "] * self.width * self.height).reshape(6,7)
-        # self.player1 = True
-
-        # if board is not None:
-        #     self.__dict__  = deepcopy(board.__dict__)
 
     def print_board(self, board):
         out = "".join(["-"]*29)
@@ -122,6 +117,8 @@ class Connect4Game:
         return board[0][column] != 0
     
     def get_reward(self, board, player, action):
+        # return None if not ended, 1 if player 1 wins, -1 if player 1 lost
+        
         if self.check_win(board, action):
             for i in range(self.height - 1, -1, -1):
                 if(board[i][action] != 0):
@@ -134,7 +131,7 @@ class Connect4Game:
         return 0
     
     def get_valid_moves(self, board):
-        valid_moves = [0] * self.get_action_size()
+        valid_moves = np.zeros(self.get_action_size())
         for col in range(self.width):
             if not self.is_full_column(board, col):
                 valid_moves[col] = 1

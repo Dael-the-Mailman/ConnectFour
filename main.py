@@ -1,6 +1,7 @@
 import numpy as np
 from board import Connect4Game, PLAYER_X, PLAYER_O
 from mcts import MCTS
+from model import MockModel
 
 print("""
  ██████  ██████  ███    ██ ███    ██ ███████  ██████ ████████     ███████  ██████  ██    ██ ██████  
@@ -10,7 +11,22 @@ print("""
  ██████  ██████  ██   ████ ██   ████ ███████  ██████    ██        ██       ██████   ██████  ██   ██ 
                                                                                                                                                                                           
     """)
+
+# Setup
+args = {
+    'batch_size': 64,
+    'numIters': 500,                                # Total number of training iterations
+    'num_simulations': 100,                         # Total number of MCTS simulations to run when deciding on a move to play
+    'numEps': 100,                                  # Number of full games (episodes) to run during each iteration
+    'numItersForTrainExamplesHistory': 20,
+    'epochs': 2,                                    # Number of epochs of training per iteration
+    'checkpoint_path': 'latest.pth'                 # location to save latest set of weights
+}
 game = Connect4Game()
+model = MockModel(game)
+mcts = MCTS(game, model, args)
+
+# Start Game
 board = game.get_init_board()
 player = PLAYER_X
 while True:
@@ -28,6 +44,9 @@ while True:
     # If User input is valid then place the piece on the board
     board, player = game.get_next_state(board, player, user_input)
     game.print_board(board) # Print board once piece placed
+    node = mcts.run(board, player)
+    ai_action = node.select_action(0)
+    board, player = game.get_next_state(board, player, ai_action)
 
     if(game.check_win(board, user_input)):
         if(-player == PLAYER_X):
