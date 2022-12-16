@@ -43,13 +43,15 @@ while True:
     
     # If User input is valid then place the piece on the board
     board, player = game.get_next_state(board, player, user_input)
-    game.print_board(board) # Print board once piece placed
-    node = mcts.run(board, player)
-    ai_action = node.select_action(0)
-    board, player = game.get_next_state(board, player, ai_action)
+    # game.print_board(board) # Print board once piece placed
+    # node = mcts.run(board, player)
+    # ai_action = node.select_action(0)
+    # board, player = game.get_next_state(board, player, ai_action)
 
-    if(game.check_win(board, user_input)):
-        if(-player == PLAYER_X):
+    win, play = game.is_win(board)
+    if win:
+        game.print_board(board)
+        if(play == PLAYER_X):
             print("X WINS!!!")
             break
         else:
