@@ -50,8 +50,10 @@ class Connect4Game:
     def is_win(self, board):
         for i in range(self.get_action_size()):
             if self.check_win(board, i):
-                return True
-        return False
+                for j in range(self.height):
+                    if board[j][i] != 0:
+                        return True, board[j][i]
+        return False, None
 
     def check_win(self, board, column):
         row = None
@@ -126,16 +128,14 @@ class Connect4Game:
     def is_full_column(self, board, column):
         return board[0][column] != 0
     
-    def get_reward(self, board, player, action):
+    def get_reward(self, board, player):
         # return None if not ended, 1 if player 1 wins, -1 if player 1 lost
-        
-        if self.check_win(board, action):
-            for i in range(self.height - 1, -1, -1):
-                if(board[i][action] != 0):
-                    if board[i][action] == player:
-                        return 1
-                    else:
-                        return -1
+        win, play = self.is_win(board)
+        if win:
+            if play == player:
+                return 1
+            else:
+                return -1
         if not self.is_full_board(board):
             return None
         return 0

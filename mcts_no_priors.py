@@ -5,7 +5,8 @@ class Node:
         self.board = board
         self.game = game
         
-        if self.game.is_win(board) or self.game.is_full_board(board):
+        win, _ = self.game.is_win(board)
+        if win or self.game.is_full_board(board):
             self.is_terminal = True
         else:
             self.is_terminal = False
@@ -17,11 +18,18 @@ class Node:
         self.children = {}
 
 class MCTS:
-    def __init__(self, game):
+    def __init__(self, game, num_iter=1600):
         self.game = game
+        self.num_iter = num_iter
 
     def search(self, initial_state):
-        pass
+        self.root = Node(initial_state, self.game)
+
+        for _ in range(self.num_iter):
+            node = self.select(self.root)
+            score = self.rollout(node)
+
+            self.backpropagate(node, score)
 
     def select(self, node):
         pass

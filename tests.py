@@ -83,7 +83,10 @@ class GameTest(unittest.TestCase):
 
     def test_is_win(self):
         init = self.game.get_init_board()
-        self.assertFalse(self.game.is_win(init))
+        
+        win, player = self.game.is_win(init)
+        self.assertFalse(win)
+        self.assertIsNone(player)
 
         horizontal = np.zeros((6,7))
         horizontal[0][0] = 1
@@ -91,14 +94,18 @@ class GameTest(unittest.TestCase):
         horizontal[0][2] = 1
         horizontal[0][3] = 1
 
-        self.assertTrue(self.game.is_win(horizontal))
+        win, player = self.game.is_win(horizontal)
+        self.assertTrue(win)
+        self.assertEqual(player, 1)
 
         horizontal = np.zeros((6,7))
         horizontal[0][0] = 1
         horizontal[0][1] = -1
         horizontal[0][2] = 1
         horizontal[0][3] = 1
-        self.assertFalse(self.game.is_win(horizontal))
+        win, player = self.game.is_win(horizontal)
+        self.assertFalse(win)
+        self.assertIsNone(player)
 
         b1 = np.array(
         [[0,  0,  0,  0,  0,  0,  0],
@@ -107,7 +114,9 @@ class GameTest(unittest.TestCase):
          [0,  1,  -1,  1,  -1,  1,  0],
          [0,  -1,  1,  -1,  1,  -1,  0],
          [1,  -1,  1,  -1,  1,  -1,  1]])
-        self.assertFalse(self.game.is_win(b1))
+        win, player = self.game.is_win(b1)
+        self.assertFalse(win)
+        self.assertIsNone(player)
 
         b2 = np.array(
         [[0,  0,  0,  0,  0,  0,  0],
@@ -116,8 +125,9 @@ class GameTest(unittest.TestCase):
          [0,  1,  -1,  1,  -1,  1,  0],
          [0,  -1,  1,  -1,  1,  -1,  0],
          [1,  -1,  1,  -1,  1,  -1,  1]])
-        self.assertTrue(self.game.is_win(b2))
-
+        win, player = self.game.is_win(b2)
+        self.assertTrue(win)
+        self.assertEqual(player, -1)
 
     def test_get_valid_moves(self):
         b = self.game.get_init_board()
@@ -182,8 +192,8 @@ class GameTest(unittest.TestCase):
         b = self.game.get_init_board()
         b[5][3] = 1
         b[5][5] = -1
-        self.assertIsNone(self.game.get_reward(b, PLAYER_X, 3))
-        self.assertIsNone(self.game.get_reward(b, PLAYER_O, 5))
+        self.assertIsNone(self.game.get_reward(b, PLAYER_X))
+        self.assertIsNone(self.game.get_reward(b, PLAYER_O))
 
         b = np.array(
             [
@@ -195,12 +205,12 @@ class GameTest(unittest.TestCase):
                 [0, -1, -1, -1, -1, 1, 1]
             ]
         )
-        self.assertEqual(self.game.get_reward(b, PLAYER_O, 1), 1)
-        self.assertEqual(self.game.get_reward(b, PLAYER_X, 1), -1)
+        self.assertEqual(self.game.get_reward(b, PLAYER_O), 1)
+        self.assertEqual(self.game.get_reward(b, PLAYER_X), -1)
 
         b = self.game.get_canonical_board(b, PLAYER_O)
-        self.assertEqual(self.game.get_reward(b, PLAYER_O, 1), -1)
-        self.assertEqual(self.game.get_reward(b, PLAYER_X, 1), 1)
+        self.assertEqual(self.game.get_reward(b, PLAYER_O), -1)
+        self.assertEqual(self.game.get_reward(b, PLAYER_X), 1)
 
 class TestMCTSNoPriors(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -208,14 +218,49 @@ class TestMCTSNoPriors(unittest.TestCase):
         self.game = Connect4Game()
         self.mcts = MCTS(self.game)
 
-    def test_init(self):
-        b = self.game.get_init_board()
-        node = Node(b, self.game)
+    def test_node_init(self):
+        b1 = self.game.get_init_board()
+        node = Node(b1, self.game)
 
-        self.assertTrue((b == node.board).all())
+        self.assertTrue((b1 == node.board).all())
         self.assertIsNone(node.parent)
         self.assertFalse(node.is_terminal)
         self.assertFalse(node.is_fully_expanded)
         self.assertEqual(node.visits, 0)
         self.assertEqual(node.score, 0)
         self.assertEqual(node.children, {})
+
+        b2 = np.array(
+        [[0,  0,  0,  0,  0,  0,  0],
+         [0,  0,  -1, 0,  -1,  0,  0],
+         [0,  0,  1,  -1,  1,  0,  0],
+         [0,  1,  -1,  1,  -1,  1,  0],
+         [0,  -1,  1,  -1,  1,  -1,  0],
+         [1,  -1,  1,  -1,  1,  -1,  1]])
+        node2 = Node(b2, self.game, node)
+
+        self.assertTrue((b2 == node2.board).all())
+        self.assertIsNotNone(node2.parent)
+        self.assertTrue(node2.is_terminal)
+        self.assertTrue(node2.is_fully_expanded)
+        self.assertEqual(node2.visits, 0)
+        self.assertEqual(node2.score, 0)
+        self.assertEqual(node2.children, {})
+
+    def test_search(self):
+        pass
+
+    def test_select(self):
+        pass
+
+    def test_expand(self):
+        pass
+
+    def test_rollout(self):
+        pass
+    
+    def test_backpropagate(self):
+        pass
+
+    def test_get_best_move(self):
+        pass
