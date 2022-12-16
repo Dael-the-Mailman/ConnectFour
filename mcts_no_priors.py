@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 class Node:
     def __init__(self, board, game, player, parent=None):
@@ -49,36 +50,46 @@ class MCTS:
         return node
 
     def expand(self, node):
-        valid_moves = node.game.get_valid_moves()
-        for move in valid_moves:
-            if move not in node.children:
-                new_node = Node(node.board, node.game, node)
-                node.children[move] = new_node
+        board = copy.deepcopy(node.board)
+        player = copy.deepcopy(node.player)
+        valid_moves = node.game.get_valid_moves(board)
+
+        if len(valid_moves) == 0:
+            return None
+
+        for action in range(len(valid_moves)):
+            move = valid_moves[action]
+            if move == 0:
+                continue
+            if action not in node.children:
+                board, player = node.game.get_next_state(board, player, action)
+                new_node = Node(board, node.game, player, node)
+                node.children[action] = new_node
 
                 if len(valid_moves) == len(node.children):
                     node.is_fully_expanded = True
 
-            return new_node
+                return new_node
         
-        print("Big oopsie")
+        print("Big oopsie expand")
     
     def rollout(self, node):
-        board = node.board
-        player = node.player
+        board = copy.deepcopy(node.board)
+        player = copy.deepcopy(node.player)
         while True:
             win, _ = node.game.is_win(board)
             if win:
-                return node.game.get_reward(board, player)
+                return node.game.get_reward(board, -1)
             
             if node.game.is_full_board(board):
                 return 0
-            
-            valid_moves = node.game.get_valid_moves()
+        
+            valid_moves = node.game.get_valid_moves(board)
             probs = valid_moves/valid_moves.sum()
-            move = np.random.choice(range(self.game.get_action_space()), p=probs)
+            move = np.random.choice(range(self.game.get_action_size()), p=probs)
             board, player = node.game.get_next_state(board, player, move)
         
-        print("Big oopsie") 
+        print("Big oopsie rollout") 
 
     def backpropagate(self, node, score):
         while node is not None:

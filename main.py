@@ -1,6 +1,6 @@
 import numpy as np
 from board import Connect4Game, PLAYER_X, PLAYER_O
-from mcts import MCTS
+from mcts_no_priors import MCTS
 from model import MockModel
 
 print("""
@@ -23,14 +23,25 @@ args = {
     'checkpoint_path': 'latest.pth'                 # location to save latest set of weights
 }
 game = Connect4Game()
-model = MockModel(game)
-mcts = MCTS(game, model, args)
+# model = MockModel(game)
+mcts = MCTS(game)
 
 # Start Game
 board = game.get_init_board()
 player = PLAYER_X
 while True:
+    
+    node = mcts.search(board, player)
+    board, player = node.board, node.player
     game.print_board(board)
+    win, play = game.is_win(board)
+    if win:
+        if(play == PLAYER_X):
+            print("X WINS!!!")
+            break
+        else:
+            print("O WINS!!!")
+            break
     user_input = input("Select from columns 0-6 or type exit: ")
     if(user_input == 'exit'):
         break
@@ -43,14 +54,9 @@ while True:
     
     # If User input is valid then place the piece on the board
     board, player = game.get_next_state(board, player, user_input)
-    # game.print_board(board) # Print board once piece placed
-    # node = mcts.run(board, player)
-    # ai_action = node.select_action(0)
-    # board, player = game.get_next_state(board, player, ai_action)
 
     win, play = game.is_win(board)
     if win:
-        game.print_board(board)
         if(play == PLAYER_X):
             print("X WINS!!!")
             break

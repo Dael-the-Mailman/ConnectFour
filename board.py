@@ -142,6 +142,10 @@ class Connect4Game:
     
     def get_valid_moves(self, board):
         valid_moves = np.zeros(self.get_action_size())
+        win, _ = self.is_win(board)
+        if win or self.is_full_board(board):
+            return valid_moves
+        
         for col in range(self.width):
             if not self.is_full_column(board, col):
                 valid_moves[col] = 1
